@@ -53,9 +53,49 @@ while(cap.isOpened()):
         contoursSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse = True)
 
         # Init point array and adjusted array of countours @@ NOTE @@ make change to a single largest item
-        adjCoutours = []
-        points = []
+        #adjContours = []
+        points = (0,0)
 
+        # Find Largest Contour
         if len(contoursSorted) >= 1:
-            adjCoutours.append(contoursSorted[0])
+            # Make variable of biggest contour
+            bigCont = contoursSorted[0]
+            
+            # Draw that big contour
+            cv2.drawContours(imgGreenBGR, bigCont, 0 (255, 0, 255), 3)
+
+            # Point finding 
+            moments = cv2.moments(bigCont)
+            moment = moments['m00']
+            if moment != 0: 
+                centerX = int(moments['m10']/moment)
+                centerY = int(moments['m01']/moment)
+
+                # Store point
+                pt = (centerX, centerY)
+                
+                # Draw point on window
+                cv2.circle(imgGreenBGR, pt, 3, (255, 0, 0), 3)
+                
+                # Put point in pt array
+                points.append(pt)
         
+        # write to console point where the center is
+        print('center of pixels = {}'.format(pt))
+
+    # Show frame with contours and points
+    cv2.imshow("Frame", imgGreenBGR)
+
+    # Show Original image in HSV
+    cv2.imshow("HSV", imgHSV)
+
+    # Press Q on keyboard to  exit
+    if cv2.waitKey(25) & 0xFF == ord('q'):
+        break
+ 
+    # Break the loop
+    else: 
+        break
+# Wait for a key press and close all windows
+cv2.waitKey(0)
+cv2.destroyAllWindows() 
