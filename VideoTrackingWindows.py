@@ -62,7 +62,7 @@ while(cap.isOpened()):
             bigCont = contoursSorted[0]
             
             # Draw that big contour
-            cv2.drawContours(imgGreenBGR, bigCont, 0 (255, 0, 255), 3)
+            cv2.drawContours(imgGreenBGR, bigCont, 0, (255, 0, 255), 3)
 
             # Point finding 
             moments = cv2.moments(bigCont)
