@@ -11,11 +11,12 @@ import math
 print("Image Tracking Example Infinite Recharge:2606")
 
 # initial video capture
-img = cv2.imread('D:\Robotics\InfiniteRechargeVision\images\ColorDiskNBalls\DSC02176.JPG' ,cv2.IMREAD_COLOR)
+img = cv2.imread('D:\Robotics\InfiniteRechargeVision\images\ColorDiskNBalls\DSC02154.JPG' ,cv2.IMREAD_COLOR)
 
 
 # Capture frames 
 frame = img
+#TEST
 
 # Convert BGR video to HSV for hue selection
 imgHSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
