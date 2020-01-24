@@ -7,12 +7,32 @@ import numpy as np
 # If the input is the camera, pass 0 instead of the video file name
 cap = cv2.VideoCapture(1)
  
+# Initial Exoisure for darkness
+cap.set(cv2.CAP_PROP_EXPOSURE, -12)
+
+# Set resolution and framerate
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
+cap.set(cv2.CAP_PROP_FPS, 30)
+
+print('Camera has been configured')
+
+# For exposure problem (see below)
+exposureResetCounter = 0
+
 # Check if camera opened successfully
 if (cap.isOpened()== False): 
   print("Error opening video stream or file")
  
 # Read until video is completed
 while(cap.isOpened()):
+
+  # Found exposure Problem last year auto adjust doesnt turn off here is a fix
+  exposureResetCounter = exposureResetCounter + 1
+  if exposureResetCounter == 29:
+    exposureResetCounter = 0
+    cap.set(cv2.CAP_PROP_EXPOSURE, -12) # -8 is around 6 ms expo
+
   # Capture frame-by-frame
   ret, frame = cap.read()
   if ret == True:

@@ -10,7 +10,7 @@ import math
 print("Video Tracking Infinite Recharge:2606")
 
 # initial video capture
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 # Initial Exoisure for darkness
 cap.set(cv2.CAP_PROP_EXPOSURE, -12)
@@ -78,7 +78,7 @@ while(cap.isOpened()):
                 cv2.circle(imgGreenBGR, pt, 3, (255, 0, 0), 3)
                 
                 # Put point in pt array
-                points.append(pt)
+                points = pt
         
         # write to console point where the center is
         print('center of pixels = {}'.format(pt))
