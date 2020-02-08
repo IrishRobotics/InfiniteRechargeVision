@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 '''Make sure you install needed libraries as administator
 1. numpy
    pip install numpy
@@ -16,52 +16,156 @@ import pickle
 import socket
 import sys
 import struct
+import json
 import time
+#import sys why was this here
 import datetime
+from cscore import CameraServer, VideoSource
+from networktables import NetworkTablesInstance
+
 #from matplotlib import pyplot as plt 
+tnow = datetime.datetime.today()
+print("Time Now {0}:{1}:{2}.{3}".format(tnow.hour, tnow.minute, tnow.second, tnow.microsecond))
+print('Video Tracking InfinReeeeCharge:2606')
 
-print('Video Tracking DeepSpace:2606')
-
-editorMode = True # False when running on Rpi 
-sendImageFrameRate = 5
-#192.168.1.114
-Host = '10.9.201.96' # CHANGE THIS to roboRio Network Ip address
+Host = '169.254.4.37' # CHANGE THIS to roboRio Network Ip address
 Port = 5804
 
 sendSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Tcp Connection
 sendSocket.connect((Host, Port))
 
+class CameraConfig: pass
+#cap = cv2.VideoCapture(0)
 
-cap = cv2.VideoCapture(1)
 
-# Configure Camera
-# Main Settings
-cap.set(cv2.CAP_PROP_EXPOSURE, -12) # -8 is Around 6 ms exposure aparently
-cap.set(cv2.CAP_PROP_BRIGHTNESS, 0)
-cap.set(cv2.CAP_PROP_SATURATION,50)
-cap.set(cv2.CAP_PROP_CONTRAST,100)
+cameraConfigs = []
 
-# FRAME rate/size
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-cap.set(cv2.CAP_PROP_FPS, 30)
+configFile = "/home/pi/cameraconfig.json"
 
-# AUTO setting SET TO OFF (DIFFRENT FOR EACH ONE)
-cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-cap.set(cv2.CAP_PROP_AUTO_WB, 0)
-#cap.set(cv2.CAP_PROP_AUTOFOCUS, False)
-cap.set(cv2.CAP_PROP_BACKLIGHT, -1.0)
+def parseError(str):
+    print("config error in '" + configFile + "': " + str, file=sys.stderr)
 
-# EXTRA SETTING TO PLAY WITH
-cap.set(cv2.CAP_PROP_SHARPNESS,0)
-#cap.set(cv2.CAP_PROP_GAIN, 0.0)
+def readCameraConfig(config):
+    cam = CameraConfig()
+
+    # name
+    try:
+        cam.name = config["name"]
+    except KeyError:
+        parseError("could not read camera name")
+        return False
+
+    # path
+    try:
+        cam.path = config["path"]
+    except KeyError:
+        parseError("camera '{}': could not read path".format(cam.name))
+        return False
+
+    cam.config = config
+
+    cameraConfigs.append(cam)
+    return True
+
+
+
+"""Read configuration file."""
+def readConfig():
+    global team
+    global server
+
+    # parse file
+    try:
+        with open(configFile, "rt") as f:
+            j = json.load(f)
+    except OSError as err:
+        print("could not open '{}': {}".format(configFile, err), file=sys.stderr)
+        return False
+
+    # top level must be an object
+    if not isinstance(j, dict):
+        parseError("must be JSON object")
+        return False
+
+    # team number
+    try:
+        team = j["team"]
+    except KeyError:
+        parseError("could not read team number")
+        return False
+
+    # ntmode (optional)
+    if "ntmode" in j:
+        str = j["ntmode"]
+        if str.lower() == "client":
+            server = False
+        elif str.lower() == "server":
+            server = True
+        else:
+            parseError("could not understand ntmode value '{}'".format(str))
+
+    # cameras
+    try:
+        cameras = j["cameras"]
+    except KeyError:
+        parseError("could not read cameras")
+        return False
+    for camera in cameras:
+        if not readCameraConfig(camera):
+            return False
+
+    return True
+
+# # Configure Camera
+# # Main Settings
+# cap.set(cv2.CAP_PROP_EXPOSURE, -12) # -8 is Around 6 ms exposure aparently
+# cap.set(cv2.CAP_PROP_BRIGHTNESS, 0)
+# cap.set(cv2.CAP_PROP_SATURATION,50)
+# cap.set(cv2.CAP_PROP_CONTRAST,100)
+
+# # FRAME rate/size
+# cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+# cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+# cap.set(cv2.CAP_PROP_FPS, 30)
+
+# # AUTO setting SET TO OFF (DIFFRENT FOR EACH ONE)
+# cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+# cap.set(cv2.CAP_PROP_AUTO_WB, 0)
+# #cap.set(cv2.CAP_PROP_AUTOFOCUS, False)
+# cap.set(cv2.CAP_PROP_BACKLIGHT, -1.0)
+
+# # EXTRA SETTING TO PLAY WITH
+# cap.set(cv2.CAP_PROP_SHARPNESS,0)
+# #cap.set(cv2.CAP_PROP_GAIN, 0.0)
+
+# read configuration
+
+def startCamera(config):
+    camera = CameraServer.getInstance().startAutomaticCapture(name=config.name, path=config.path)
+    camera.setConfigJson(json.dumps(config.config))
+    #CameraServer.getInstance().setConfigJson(json.dumps(config.config))
+    camera = CameraServer.getInstance().getVideo()
+
+
+
+    return camera
+
+if not readConfig():
+    sys.exit(1)
+cap = startCamera(cameraConfigs[0])
+
+
 
 pictureCenter = (319.5,239.5)
+#pictureCenter = (159.5, 119.5)
 focalLength = 713.582
 exposureResetCounter = 0
 imageSendCounter = 0
 
 print('Camera has been configured: 640x480 30fps')
+
+frame = np.zeros(shape = (240, 320, 3), dtype = np.uint8)
+
 
 while(cap.isOpened()):
   
@@ -163,5 +267,3 @@ if editorMode == True:
     # Wait for a key press and close all windows
     cv2.waitKey(0)
     cv2.destroyAllWindows() 
-
-
