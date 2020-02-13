@@ -18,13 +18,18 @@ def recvall(sock, n):
 
 print('RoboRiosimulator')
 
-Host = '169.254.4.37' # CHANGE THIS to roboRio Network Ip address
-Port = 5804
+Host = '10.9.30.176' # CHANGE THIS to roboRio Network Ip address
+Port = 60378
 
 recvSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+print('socket setup')
 
 recvSocket.bind((Host, Port))
+print('socket bound')
+
 recvSocket.listen(1)
+print("socket listeb")
+
 conn, addr = recvSocket.accept()
 print(f'Connectipon address: {addr}')
 

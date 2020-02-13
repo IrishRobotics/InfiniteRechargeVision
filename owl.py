@@ -28,14 +28,16 @@ tnow = datetime.datetime.today()
 print("Time Now {0}:{1}:{2}.{3}".format(tnow.hour, tnow.minute, tnow.second, tnow.microsecond))
 print('Video Tracking InfinReeeeCharge:2606')
 
-Host = '169.254.4.37' # CHANGE THIS to roboRio Network Ip address
-Port = 5804
+Host = '10.9.30.176' # CHANGE THIS to roboRio Network Ip address
+Port = 60378
 
 sendSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Tcp Connection
+print('setup socket')
 sendSocket.connect((Host, Port))
+print('socket connected')
 
 class CameraConfig: pass
-#cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 
 
 cameraConfigs = []
