@@ -107,20 +107,20 @@ def readConfig():
             parseError("could not understand ntmode value '{}'".format(str))
 
     # cameras
-    try:
-        cameras = j["cameras"]
-    except KeyError:
-        parseError("could not read cameras")
-        return False
-    for camera in cameras:
-        if not readCameraConfig(camera):
-            return False
+    # try:
+    #     cameras = j["cameras"]
+    # except KeyError:
+    #     parseError("could not read cameras")
+    #     return False
+    # for camera in cameras:
+    #     if not readCameraConfig(camera):
+    #         return False
 
     return True
 
 # # Configure Camera
 # # Main Settings
-# cap.set(cv2.CAP_PROP_EXPOSURE, -12) # -8 is Around 6 ms exposure aparently
+cap.set(cv2.CAP_PROP_EXPOSURE, -12) # -8 is Around 6 ms exposure aparently
 # cap.set(cv2.CAP_PROP_BRIGHTNESS, 0)
 # cap.set(cv2.CAP_PROP_SATURATION,50)
 # cap.set(cv2.CAP_PROP_CONTRAST,100)
@@ -131,10 +131,10 @@ def readConfig():
 # cap.set(cv2.CAP_PROP_FPS, 30)
 
 # # AUTO setting SET TO OFF (DIFFRENT FOR EACH ONE)
-# cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-# cap.set(cv2.CAP_PROP_AUTO_WB, 0)
-# #cap.set(cv2.CAP_PROP_AUTOFOCUS, False)
-# cap.set(cv2.CAP_PROP_BACKLIGHT, -1.0)
+cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+cap.set(cv2.CAP_PROP_AUTO_WB, 0)
+cap.set(cv2.CAP_PROP_AUTOFOCUS, False)
+cap.set(cv2.CAP_PROP_BACKLIGHT, -1.0)
 
 # # EXTRA SETTING TO PLAY WITH
 # cap.set(cv2.CAP_PROP_SHARPNESS,0)
@@ -152,9 +152,9 @@ def startCamera(config):
 
     return camera
 
-if not readConfig():
-    sys.exit(1)
-cap = startCamera(cameraConfigs[0])
+# if not readConfig():
+#     sys.exit(1)
+# cap = startCamera(cameraConfigs[0])
 
 
 
@@ -174,7 +174,7 @@ while(cap.isOpened()):
   exposureResetCounter = exposureResetCounter + 1
   if exposureResetCounter == 29:
     exposureResetCounter = 0
-    cap.set(cv2.CAP_PROP_EXPOSURE, -8) # -8 is Around 6 ms exposure aparently
+    cap.set(cv2.CAP_PROP_EXPOSURE, -12) # -8 is Around 6 ms exposure aparently
     
   # Capture frame-by-frame
   ret, frame = cap.read()
@@ -182,7 +182,7 @@ while(cap.isOpened()):
     tnow = datetime.datetime.today()
     imgHSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    imgGreenBW = cv2.inRange(imgHSV, np.array([30, 150, 40]), np.array([100, 255, 255]))
+    imgGreenBW = cv2.inRange(imgHSV, np.array([45, 30, 30]), np.array([70, 255, 255]))
 
 
     imgGreenBGR = cv2.cvtColor(imgGreenBW, cv2.COLOR_GRAY2BGR)
@@ -202,12 +202,6 @@ while(cap.isOpened()):
         if contourArea > minArea:
             adjCoutours.append(contour)
 
-    
-
-
-    if editorMode == True or sendContourProcessedImage == True: 
-        for contour in adjCoutours:
-            cv2.drawContours(imgGreenBGR, [contour], 0, (255, 0, 255), 3)
 
     for contour in adjCoutours:
         moments = cv2.moments(contour)
@@ -216,7 +210,7 @@ while(cap.isOpened()):
             centerX = int(moments['m10']/moment0)
             centerY = int(moments['m01']/moment0)
             pt = (centerX, centerY - (int)(cv2.contourArea(contour)/60))
-            if editorMode == True: 
+            if False: 
                 cv2.circle(imgGreenBGR, pt, 3, (255, 0, 0), 3)
             points.append(pt)
     if len(points) != 0:
@@ -245,12 +239,13 @@ while(cap.isOpened()):
         print( 'angle is {}'.format(targetAngle))
 
         message = struct.pack('!idhhhi', 1, targetAngle, tnow.hour, tnow.minute, tnow.second, tnow.microsecond)
+        message
         sendSocket.send(message)
     else:
-        message = struct.pack('!i', 2)
+        message = struct.pack('!i', 0)
         sendSocket.send(message)
 
-    if editorMode == True:    
+    if False:    
         # Display the resulting frame
         cv2.imshow('Frame', imgGreenBGR)
         #Frame without centerpoints cv2.imshow('Frame2',imgGreenBW )
@@ -265,7 +260,7 @@ while(cap.isOpened()):
   # Break the loop
   else: 
     break
-if editorMode == True:
+if False:
     # Wait for a key press and close all windows
     cv2.waitKey(0)
     cv2.destroyAllWindows() 

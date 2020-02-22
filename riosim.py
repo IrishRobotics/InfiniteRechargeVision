@@ -41,21 +41,23 @@ while True:
         messageId = message[0]
         #print(f'{messageId}')
         
-        if messageId == 1:           
-            data = conn.recv(26)
-            messageType1 = struct.unpack('!dhhhi', data) 
-            
-            targetAngle = messageType1[0]
-            #targetDistance = messageType1[1]
-            timeHour = messageType1[1]
-            timeMinute = messageType1[2]
-            timeSecond = messageType1[3]
-            timeMicroSecond = messageType1[4]
+        if messageId == 1:
+            try:           
+                data = conn.recv(26)
+                messageType1 = struct.unpack('!dhhhi', data) 
+                
+                targetAngle = messageType1[0]
+                #targetDistance = messageType1[1]
+                timeHour = messageType1[1]
+                timeMinute = messageType1[2]
+                timeSecond = messageType1[3]
+                timeMicroSecond = messageType1[4]
 
 
 
 
-            print(f'got vision target found {targetAngle} {timeHour}:{timeMinute}:{timeSecond}.{timeMicroSecond}')
-
-        elif messageId == 2:
+                print(f'got vision target found {targetAngle} {timeHour}:{timeMinute}:{timeSecond}.{timeMicroSecond}')
+            except:
+                pass
+        elif messageId == 0:
             print('got no vision target found')
